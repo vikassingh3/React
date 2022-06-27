@@ -1,9 +1,29 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Header from "./Header";
 import './css/form.css'
+import Paginations from '../Paginations';
 
 function Home() {
   const [data, setData] = useState("")
+  const [currentPage, setCurrentPage] = useState(0);
+
+  let records = data.length
+  let LIMIT = 2
+
+  const onPageChange = useCallback(
+    (event, page) => {
+      event.preventDefault()
+      setCurrentPage(page)
+    },
+    [setCurrentPage]
+  );
+
+  const currentData = data.slice(
+    (currentPage - 1) * LIMIT,
+    (currentPage - 1) * LIMIT + LIMIT
+  );
+    
+
   useEffect(() => {
     fetch("http://localhost:8080/getUsers")
       .then(Response => {
@@ -27,7 +47,7 @@ function Home() {
         </thead>
         <tbody>
           {
-            Object.values(data).map((item, index) => {
+            Object.values(currentData).map((item, index) => {
               return (
                 <tr key={index} className='tbl'>
                   <td className='tbl'>{item.Name}</td>
@@ -36,11 +56,19 @@ function Home() {
                 </tr>
               )
             })
-            
           }
-
         </tbody>
       </table>
+
+      <div className="pagination-wrapper">
+          <Paginations
+            totalRecords={records}
+            pageLimit={LIMIT}
+            pageNeighbours={2}
+            onPageChanged={onPageChange}
+            currentPage={currentPage}
+          />
+        </div>
     </div>
   )
 }
